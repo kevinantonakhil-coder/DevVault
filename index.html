@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DevVault</title>
+    <meta
+      name="description"
+      content="Developer dashboard for projects, tasks, goals, GitHub activity, and productivity tooling."
+    />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2314141d'/%3E%3Cpath d='M20 20h24v24H20z' fill='none' stroke='%237c6df3' stroke-width='4'/%3E%3Cpath d='M26 38V26h12v12M26 32h12' stroke='%237c6df3' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand-row">
+          <div class="brand-mark">D</div>
+          <div>
+            <div class="brand-name">DevVault</div>
+            <div class="brand-subtitle">Developer command center</div>
+          </div>
+        </div>
+
+        <nav class="main-nav" aria-label="Main navigation">
+          <button class="nav-item active" data-page="dashboard" type="button">
+            <span class="nav-icon" data-lucide="layout-dashboard"></span>
+            <span>Dashboard</span>
+          </button>
+          <button class="nav-item" data-page="projects" type="button">
+            <span class="nav-icon" data-lucide="folder-kanban"></span>
+            <span>Projects</span>
+          </button>
+          <button class="nav-item" data-page="project-detail" type="button">
+            <span class="nav-icon" data-lucide="folder"></span>
+            <span>Project Details</span>
+          </button>
+          <button class="nav-item" data-page="tasks" type="button">
+            <span class="nav-icon" data-lucide="check-square"></span>
+            <span>Tasks</span>
+          </button>
+          <button class="nav-item" data-page="kanban" type="button">
+            <span class="nav-icon" data-lucide="columns-3"></span>
+            <span>Kanban Board</span>
+          </button>
+          <button class="nav-item" data-page="github" type="button">
+            <span class="nav-icon" data-lucide="git-branch"></span>
+            <span>GitHub Explorer</span>
+          </button>
+          <button class="nav-item" data-page="tools" type="button">
+            <span class="nav-icon" data-lucide="wrench"></span>
+            <span>Developer Toolkit</span>
+          </button>
+          <button class="nav-item" data-page="goals" type="button">
+            <span class="nav-icon" data-lucide="target"></span>
+            <span>Goals &amp; Productivity</span>
+          </button>
+          <button class="nav-item" data-page="activity" type="button">
+            <span class="nav-icon" data-lucide="activity"></span>
+            <span>Activity History</span>
+          </button>
+          <button class="nav-item" data-page="settings" type="button">
+            <span class="nav-icon" data-lucide="settings"></span>
+            <span>Settings</span>
+          </button>
+        </nav>
+      </aside>
+
+      <div class="content-shell">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="panel-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar">
+              <span data-lucide="menu"></span>
+            </button>
+            <div>
+              <p class="eyebrow">Workspace</p>
+              <h1 id="pageTitle">Dashboard</h1>
+            </div>
+          </div>
+          <div class="topbar-actions">
+            <div class="search-box">
+              <span data-lucide="search"></span>
+              <input
+                id="globalSearch"
+                type="search"
+                placeholder="Search projects and tasks"
+                aria-label="Search projects and tasks"
+              />
+            </div>
+            <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle theme">
+              <span data-lucide="sun-moon"></span>
+            </button>
+          </div>
+        </header>
+
+        <main class="page-container">
+          <section class="page active" data-page="dashboard">
+            <div class="stats-grid" id="statsGrid"></div>
+            <div class="content-grid two-col">
+              <div class="panel">
+                <div class="panel-header">
+                  <h2>Recent projects</h2>
+                </div>
+                <div id="recentProjectsList" class="stack-list"></div>
+              </div>
+              <div class="panel">
+                <div class="panel-header">
+                  <h2>Upcoming deadlines</h2>
+                </div>
+                <div id="upcomingDeadlines" class="stack-list"></div>
+              </div>
+            </div>
+            <div class="content-grid two-col charts-grid">
+              <div class="panel chart-panel">
+                <div class="panel-header">
+                  <h2>Weekly task completion</h2>
+                </div>
+                <canvas id="weeklyChart" aria-label="Weekly chart"></canvas>
+              </div>
+              <div class="panel chart-panel">
+                <div class="panel-header">
+                  <h2>Project status distribution</h2>
+                </div>
+                <canvas id="statusChart" aria-label="Project status chart"></canvas>
+              </div>
+            </div>
+            <div class="content-grid two-col">
+              <div class="panel">
+                <div class="panel-header">
+                  <h2>Recent activity</h2>
+                </div>
+                <div id="activityFeed" class="stack-list"></div>
+              </div>
+              <div class="panel">
+                <div class="panel-header">
+                  <h2>Quick actions</h2>
+                </div>
+                <div class="quick-actions">
+                  <button class="action-button" data-open-form="project" type="button">New project</button>
+                  <button class="action-button" data-open-form="task" type="button">New task</button>
+                  <button class="action-button" data-page-target="github" type="button">Search GitHub</button>
+                  <button class="action-button" data-page-target="goals" type="button">Log coding session</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="page" data-page="projects">
+            <div class="panel toolbar-panel">
+              <div class="toolbar">
+                <div class="field-group inline-field">
+                  <label for="projectSearch">Search</label>
+                  <input id="projectSearch" type="search" placeholder="Filter projects" />
+                </div>
+                <div class="field-group inline-field">
+                  <label for="projectStatusFilter">Status</label>
+                  <select id="projectStatusFilter">
+                    <option value="all">All</option>
+                    <option value="Planning">Planning</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Paused">Paused</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                </div>
+                <div class="field-group inline-field">
+                  <label for="projectCategoryFilter">Category</label>
+                  <select id="projectCategoryFilter">
+                    <option value="all">All</option>
+                    <option value="Web Development">Web Development</option>
+                    <option value="Python">Python</option>
+                    <option value="Arduino">Arduino</option>
+                    <option value="ESP32">ESP32</option>
+                    <option value="AI">AI</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="field-group inline-field">
+                  <label for="projectPriorityFilter">Priority</label>
+                  <select id="projectPriorityFilter">
+                    <option value="all">All</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Critical">Critical</option>
+                  </select>
+                </div>
+                <div class="field-group inline-field">
+                  <label for="projectSort">Sort</label>
+                  <select id="projectSort">
+                    <option value="updated">Last updated</option>
+                    <option value="deadline">Deadline</option>
+                    <option value="name">Name</option>
+                  </select>
+                </div>
+                <button class="primary-button" id="addProjectButton" type="button">New project</button>
+              </div>
+            </div>
+            <div id="projectsList" class="card-grid"></div>
+          </section>
+
+          <section class="page" data-page="project-detail">
+            <div id="projectDetailPage" class="project-detail-page"></div>
+          </section>
+
+          <section class="page" data-page="tasks">
+            <div class="panel toolbar-panel">
+              <div class="toolbar">
+                <div class="field-group inline-field">
+                  <label for="taskSearch">Search</label>
+                  <input id="taskSearch" type="search" placeholder="Search tasks" />
+                </div>
+                <div class="field-group inline-field">
+                  <label for="taskStatusFilter">Status</label>
+                  <select id="taskStatusFilter">
+                    <option value="all">All</option>
+                    <option value="todo">To Do</option>
+                    <option value="inprogress">In Progress</option>
+                    <option value="done">Done</option>
+                  </select>
+                </div>
+                <div class="field-group inline-field">
+                  <label for="taskPriorityFilter">Priority</label>
+                  <select id="taskPriorityFilter">
+                    <option value="all">All</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Critical">Critical</option>
+                  </select>
+                </div>
+                <div class="field-group inline-field">
+                  <label for="taskSort">Sort</label>
+                  <select id="taskSort">
+                    <option value="updated">Updated</option>
+                    <option value="due">Due date</option>
+                    <option value="priority">Priority</option>
+                    <option value="title">Title</option>
+                  </select>
+                </div>
+                <button class="primary-button" id="addTaskButton" type="button">New task</button>
+              </div>
+            </div>
+            <div id="tasksList" class="task-list-panel"></div>
+          </section>
+
+          <section class="page" data-page="kanban">
+            <div class="kanban-board" id="kanbanBoard"></div>
+          </section>
+
+          <section class="page" data-page="github">
+            <div class="panel github-panel">
+              <div class="toolbar compact">
+                <div class="field-group inline-field grow">
+                  <label for="githubUsername">GitHub username</label>
+                  <input id="githubUsername" type="text" placeholder="Search public repositories" />
+                </div>
+                <button id="githubSearchButton" class="primary-button" type="button">Search</button>
+              </div>
+              <div id="githubStatus" class="inline-status" aria-live="polite"></div>
+              <div id="githubRepoList" class="repo-grid"></div>
+            </div>
+          </section>
+
+          <section class="page" data-page="tools">
+            <div class="tools-grid" id="toolsGrid"></div>
+          </section>
+
+          <section class="page" data-page="goals">
+            <div class="content-grid two-col">
+              <div class="panel">
+                <div class="panel-header">
+                  <h2>Productivity goals</h2>
+                </div>
+                <div class="goal-form">
+                  <div class="field-group">
+                    <label for="dailyGoalInput">Daily coding goal (minutes)</label>
+                    <input id="dailyGoalInput" type="number" min="0" step="5" />
+                  </div>
+                  <div class="field-group">
+                    <label for="weeklyGoalInput">Weekly task goal</label>
+                    <input id="weeklyGoalInput" type="number" min="0" step="1" />
+                  </div>
+                  <button id="saveGoalsButton" class="primary-button" type="button">Save goals</button>
+                </div>
+                <div id="goalSummary" class="goal-summary"></div>
+              </div>
+              <div class="panel">
+                <div class="panel-header">
+                  <h2>Focus timer</h2>
+                </div>
+                <div class="timer-box">
+                  <div id="timerDisplay" class="timer-display">25:00</div>
+                  <div class="field-group inline-field">
+                    <label for="timerMinutes">Minutes</label>
+                    <input id="timerMinutes" type="number" min="1" max="180" value="25" />
+                  </div>
+                  <div class="button-row">
+                    <button id="startTimerButton" class="primary-button" type="button">Start</button>
+                    <button id="pauseTimerButton" class="secondary-button" type="button">Pause</button>
+                    <button id="resetTimerButton" class="ghost-button" type="button">Reset</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="content-grid two-col">
+              <div class="panel">
+                <div class="panel-header">
+                  <h2>Log coding session</h2>
+                </div>
+                <form id="activityForm" class="goal-form" novalidate>
+                  <div class="field-group">
+                    <label for="sessionDate">Date</label>
+                    <input id="sessionDate" type="date" required />
+                  </div>
+                  <div class="field-group">
+                    <label for="sessionMinutes">Minutes</label>
+                    <input id="sessionMinutes" type="number" min="1" max="600" required />
+                  </div>
+                  <div class="field-group">
+                    <label for="sessionNote">Notes</label>
+                    <input id="sessionNote" type="text" placeholder="Feature work, debugging, review, etc." />
+                  </div>
+                  <button class="primary-button" type="submit">Save session</button>
+                </form>
+              </div>
+              <div class="panel">
+                <div class="panel-header">
+                  <h2>Achievements</h2>
+                </div>
+                <div id="achievementList" class="achievement-list"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="page" data-page="activity">
+            <div class="panel">
+              <div class="panel-header">
+                <h2>Activity history</h2>
+              </div>
+              <div id="activityHistory" class="activity-history"></div>
+            </div>
+          </section>
+
+          <section class="page" data-page="settings">
+            <div class="content-grid two-col">
+              <div class="panel">
+                <div class="panel-header">
+                  <h2>Appearance</h2>
+                </div>
+                <div class="settings-stack">
+                  <label class="switch-row">
+                    <span>Dark mode</span>
+                    <input id="themeSetting" type="checkbox" />
+                  </label>
+                  <div class="field-group">
+                    <label for="accentSelect">Accent color</label>
+                    <select id="accentSelect">
+                      <option value="violet">Violet</option>
+                      <option value="cyan">Cyan</option>
+                      <option value="emerald">Emerald</option>
+                      <option value="amber">Amber</option>
+                    </select>
+                  </div>
+                  <div class="field-group">
+                    <label for="dateDisplaySelect">Date display</label>
+                    <select id="dateDisplaySelect">
+                      <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                      <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                      <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                    </select>
+                  </div>
+                  <div class="field-group">
+                    <label for="timeDisplaySelect">Time display</label>
+                    <select id="timeDisplaySelect">
+                      <option value="24h">24 hour</option>
+                      <option value="12h">12 hour</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel-header">
+                  <h2>Preferences</h2>
+                </div>
+                <div class="settings-stack">
+                  <div class="field-group">
+                    <label for="githubPrefInput">GitHub username preference</label>
+                    <input id="githubPrefInput" type="text" placeholder="Optional username" />
+                  </div>
+                  <button id="exportDataButton" class="secondary-button" type="button">Export data</button>
+                  <label class="file-upload">
+                    <input id="importDataInput" type="file" accept="application/json" />
+                    <span>Import data</span>
+                  </label>
+                  <button id="backupDataButton" class="secondary-button" type="button">Download backup</button>
+                  <button id="clearDataButton" class="danger-button" type="button">Reset all local data</button>
+                </div>
+              </div>
+            </div>
+            <div class="panel settings-about">
+              <div class="panel-header">
+                <h2>About</h2>
+              </div>
+              <p>
+                DevVault stores your data in LocalStorage on the current browser and device only. It does not automatically sync across devices.
+              </p>
+              <div class="about-meta">
+                <span>Version <strong id="appVersion">1.0.0</strong></span>
+                <span>Local-only data storage</span>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <div class="modal hidden" id="projectModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-modal="project"></div>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
+        <div class="modal-header">
+          <h2 id="projectModalTitle">New project</h2>
+          <button class="icon-button" data-close-modal="project" type="button" aria-label="Close project modal">
+            <span data-lucide="x"></span>
+          </button>
+        </div>
+        <form id="projectForm" novalidate>
+          <input type="hidden" id="projectId" />
+          <div class="field-grid">
+            <div class="field-group">
+              <label for="projectName">Name</label>
+              <input id="projectName" required maxlength="80" />
+            </div>
+            <div class="field-group">
+              <label for="projectCategory">Category</label>
+              <select id="projectCategory">
+                <option value="Web Development">Web Development</option>
+                <option value="Python">Python</option>
+                <option value="Arduino">Arduino</option>
+                <option value="ESP32">ESP32</option>
+                <option value="AI">AI</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="projectStatus">Status</label>
+              <select id="projectStatus">
+                <option value="Planning">Planning</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Paused">Paused</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="projectPriority">Priority</label>
+              <select id="projectPriority">
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+                <option value="Critical">Critical</option>
+              </select>
+            </div>
+            <div class="field-group full-width">
+              <label for="projectDescription">Description</label>
+              <textarea id="projectDescription" rows="4" maxlength="500"></textarea>
+            </div>
+            <div class="field-group">
+              <label for="projectStartDate">Start date</label>
+              <input id="projectStartDate" type="date" />
+            </div>
+            <div class="field-group">
+              <label for="projectDeadline">Deadline</label>
+              <input id="projectDeadline" type="date" />
+            </div>
+            <div class="field-group full-width">
+              <label for="projectGithubUrl">GitHub URL</label>
+              <input id="projectGithubUrl" type="url" placeholder="https://github.com/owner/repo" />
+            </div>
+            <label class="checkbox-row full-width">
+              <input id="projectFavorite" type="checkbox" />
+              <span>Pin to dashboard</span>
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button class="secondary-button" type="button" data-close-modal="project">Cancel</button>
+            <button class="primary-button" type="submit">Save project</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal hidden" id="taskModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-modal="task"></div>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+        <div class="modal-header">
+          <h2 id="taskModalTitle">New task</h2>
+          <button class="icon-button" data-close-modal="task" type="button" aria-label="Close task modal">
+            <span data-lucide="x"></span>
+          </button>
+        </div>
+        <form id="taskForm" novalidate>
+          <input type="hidden" id="taskId" />
+          <div class="field-grid">
+            <div class="field-group full-width">
+              <label for="taskTitle">Task title</label>
+              <input id="taskTitle" required maxlength="120" />
+            </div>
+            <div class="field-group full-width">
+              <label for="taskDescription">Description</label>
+              <textarea id="taskDescription" rows="4" maxlength="400"></textarea>
+            </div>
+            <div class="field-group">
+              <label for="taskProject">Project</label>
+              <select id="taskProject"></select>
+            </div>
+            <div class="field-group">
+              <label for="taskPriority">Priority</label>
+              <select id="taskPriority">
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+                <option value="Critical">Critical</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="taskStatus">Status</label>
+              <select id="taskStatus">
+                <option value="todo">To Do</option>
+                <option value="inprogress">In Progress</option>
+                <option value="done">Done</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="taskDueDate">Due date</label>
+              <input id="taskDueDate" type="date" />
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="secondary-button" type="button" data-close-modal="task">Cancel</button>
+            <button class="primary-button" type="submit">Save task</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
