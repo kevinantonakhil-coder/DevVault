@@ -123,6 +123,7 @@ function initApp() {
 
 function bindStaticEvents() {
   document.querySelectorAll(".nav-item").forEach((button) => {
+    button.title = button.querySelector(".nav-label").textContent.trim();
     button.addEventListener("click", () => {
       const page = button.dataset.page;
       setPage(page);
@@ -132,14 +133,39 @@ function bindStaticEvents() {
     });
   });
 
-  document.getElementById("sidebarToggle").addEventListener("click", () => {
-    document.querySelector(".sidebar").classList.toggle("open");
+  const sidebar = document.getElementById("sidebar");
+  const sidebarToggle = document.getElementById("sidebarToggle");
+  const appShell = document.querySelector(".app-shell");
+  const isCompactNavigation = () => window.matchMedia("(max-width: 980px)").matches;
+
+  const syncSidebarState = () => {
+    if (isCompactNavigation()) {
+      sidebar.classList.remove("open");
+      appShell.classList.remove("sidebar-collapsed");
+      sidebarToggle.setAttribute("aria-expanded", "false");
+    } else {
+      sidebar.classList.remove("open");
+      sidebarToggle.setAttribute("aria-expanded", String(!appShell.classList.contains("sidebar-collapsed")));
+    }
+  };
+
+  sidebarToggle.setAttribute("aria-expanded", String(!isCompactNavigation()));
+  sidebarToggle.addEventListener("click", () => {
+    if (isCompactNavigation()) {
+      sidebarToggle.setAttribute("aria-expanded", String(sidebar.classList.toggle("open")));
+      return;
+    }
+
+    const isCollapsed = appShell.classList.toggle("sidebar-collapsed");
+    sidebarToggle.setAttribute("aria-expanded", String(!isCollapsed));
   });
+  window.addEventListener("resize", syncSidebarState);
 
   document.getElementById("themeToggle").addEventListener("click", () => {
     state.theme = state.theme === "dark" ? "light" : "dark";
     applyTheme(state.theme);
     saveState();
+    if (state.currentPage === "dashboard") renderDashboardCharts();
   });
 
   document.getElementById("globalSearch").addEventListener("input", (event) => {
@@ -182,12 +208,14 @@ function bindStaticEvents() {
     state.theme = event.target.checked ? "dark" : "light";
     applyTheme(state.theme);
     saveState();
+    if (state.currentPage === "dashboard") renderDashboardCharts();
   });
 
   document.getElementById("accentSelect").addEventListener("change", (event) => {
     state.accent = event.target.value;
     applyAccent(state.accent);
     saveState();
+    if (state.currentPage === "dashboard") renderDashboardCharts();
   });
 
   document.getElementById("dateDisplaySelect").addEventListener("change", (event) => {
@@ -374,6 +402,9 @@ function setPage(pageName) {
 
   document.getElementById("pageTitle").textContent = pageLabels[pageName] || "Dashboard";
   document.querySelector(".sidebar").classList.remove("open");
+  if (window.matchMedia("(max-width: 980px)").matches) {
+    document.getElementById("sidebarToggle").setAttribute("aria-expanded", "false");
+  }
 
   if (pageName === "project-detail" && currentProjectId) {
     renderProjectDetailPage();
@@ -463,7 +494,14 @@ function renderDashboard() {
           `
         )
         .join("")
-    : `<div class="empty-state">No pinned or recent projects yet. Create a project to get started.</div>`;
+    : `<div class="empty-state">
+        <p>${state.projects.length ? "Pin a project to keep it handy here." : "Create your first project to start organizing your work."}</p>
+        <div class="button-row">
+          ${state.projects.length
+            ? '<button class="secondary-button" type="button" data-page-target="projects">Browse projects</button>'
+            : '<button class="primary-button" type="button" data-open-form="project">Create project</button>'}
+        </div>
+      </div>`;
 
   const upcoming = getUpcomingProjects();
   document.getElementById("upcomingDeadlines").innerHTML = upcoming.length
@@ -480,7 +518,10 @@ function renderDashboard() {
           `
         )
         .join("")
-    : `<div class="empty-state">No upcoming deadlines logged.</div>`;
+    : `<div class="empty-state">
+        <p>No upcoming deadlines yet. Add a deadline to any project to see it here.</p>
+        <div class="button-row"><button class="secondary-button" type="button" data-open-form="project">Add a project deadline</button></div>
+      </div>`;
 
   const activityFeed = document.getElementById("activityFeed");
   const feedItems = state.activity.slice().reverse().slice(0, 5);
@@ -498,9 +539,13 @@ function renderDashboard() {
           `
         )
         .join("")
-    : `<div class="empty-state">No activity logged yet.</div>`;
+    : `<div class="empty-state">
+        <p>No activity logged yet. Record a coding session to build your activity history.</p>
+        <div class="button-row"><button class="secondary-button" type="button" data-page-target="goals">Log a coding session</button></div>
+      </div>`;
 
   renderDashboardCharts();
+  if (window.lucide) lucide.createIcons();
 }
 
 function renderDashboardCharts() {
@@ -515,14 +560,23 @@ function renderDashboardCharts() {
     state.projects.filter((project) => project.status === status).length
   );
 
-  if (chartRefs.weekly) {
-    chartRefs.weekly.destroy();
-  }
-  if (chartRefs.status) {
-    chartRefs.status.destroy();
-  }
+  const weeklyCanvas = document.getElementById("weeklyChart");
+  const statusCanvas = document.getElementById("statusChart");
+  const weeklyHasData = completionCounts.some((count) => count > 0);
+  const statusHasData = statusCounts.some((count) => count > 0);
+  const chartTextColor = getComputedStyle(document.documentElement).getPropertyValue("--muted").trim();
+  const chartGridColor = getComputedStyle(document.documentElement).getPropertyValue("--border").trim();
 
-  chartRefs.weekly = new Chart(document.getElementById("weeklyChart"), {
+  if (chartRefs.weekly) chartRefs.weekly.destroy();
+  if (chartRefs.status) chartRefs.status.destroy();
+  chartRefs.weekly = null;
+  chartRefs.status = null;
+  weeklyCanvas.hidden = !weeklyHasData;
+  statusCanvas.hidden = !statusHasData;
+  document.querySelector('[data-chart-empty="weekly"]').hidden = weeklyHasData;
+  document.querySelector('[data-chart-empty="status"]').hidden = statusHasData;
+
+  if (weeklyHasData) chartRefs.weekly = new Chart(weeklyCanvas, {
     type: "line",
     data: {
       labels: labels.map((day) => formatSimpleDay(day)),
@@ -540,15 +594,22 @@ function renderDashboardCharts() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { titleColor: chartTextColor, bodyColor: chartTextColor },
+      },
       scales: {
-        x: { grid: { display: false } },
-        y: { beginAtZero: true, ticks: { precision: 0 } },
+        x: { grid: { display: false }, ticks: { color: chartTextColor } },
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0, color: chartTextColor },
+          grid: { color: chartGridColor },
+        },
       },
     },
   });
 
-  chartRefs.status = new Chart(document.getElementById("statusChart"), {
+  if (statusHasData) chartRefs.status = new Chart(statusCanvas, {
     type: "doughnut",
     data: {
       labels: STATUS_OPTIONS,
@@ -568,7 +629,12 @@ function renderDashboardCharts() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { position: "bottom" } },
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: { color: chartTextColor, padding: 16, usePointStyle: true },
+        },
+      },
     },
   });
 }

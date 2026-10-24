@@ -33,43 +33,43 @@
         <nav class="main-nav" aria-label="Main navigation">
           <button class="nav-item active" data-page="dashboard" type="button">
             <span class="nav-icon" data-lucide="layout-dashboard"></span>
-            <span>Dashboard</span>
+            <span class="nav-label">Dashboard</span>
           </button>
           <button class="nav-item" data-page="projects" type="button">
             <span class="nav-icon" data-lucide="folder-kanban"></span>
-            <span>Projects</span>
+            <span class="nav-label">Projects</span>
           </button>
           <button class="nav-item" data-page="project-detail" type="button">
             <span class="nav-icon" data-lucide="folder"></span>
-            <span>Project Details</span>
+            <span class="nav-label">Project Details</span>
           </button>
           <button class="nav-item" data-page="tasks" type="button">
             <span class="nav-icon" data-lucide="check-square"></span>
-            <span>Tasks</span>
+            <span class="nav-label">Tasks</span>
           </button>
           <button class="nav-item" data-page="kanban" type="button">
             <span class="nav-icon" data-lucide="columns-3"></span>
-            <span>Kanban Board</span>
+            <span class="nav-label">Kanban Board</span>
           </button>
           <button class="nav-item" data-page="github" type="button">
             <span class="nav-icon" data-lucide="git-branch"></span>
-            <span>GitHub Explorer</span>
+            <span class="nav-label">GitHub Explorer</span>
           </button>
           <button class="nav-item" data-page="tools" type="button">
             <span class="nav-icon" data-lucide="wrench"></span>
-            <span>Developer Toolkit</span>
+            <span class="nav-label">Developer Toolkit</span>
           </button>
           <button class="nav-item" data-page="goals" type="button">
             <span class="nav-icon" data-lucide="target"></span>
-            <span>Goals &amp; Productivity</span>
+            <span class="nav-label">Goals &amp; Productivity</span>
           </button>
           <button class="nav-item" data-page="activity" type="button">
             <span class="nav-icon" data-lucide="activity"></span>
-            <span>Activity History</span>
+            <span class="nav-label">Activity History</span>
           </button>
           <button class="nav-item" data-page="settings" type="button">
             <span class="nav-icon" data-lucide="settings"></span>
-            <span>Settings</span>
+            <span class="nav-label">Settings</span>
           </button>
         </nav>
       </aside>
@@ -77,7 +77,7 @@
       <div class="content-shell">
         <header class="topbar">
           <div class="topbar-left">
-            <button class="panel-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar">
+            <button class="panel-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true">
               <span data-lucide="menu"></span>
             </button>
             <div>
@@ -123,13 +123,19 @@
                 <div class="panel-header">
                   <h2>Weekly task completion</h2>
                 </div>
-                <canvas id="weeklyChart" aria-label="Weekly chart"></canvas>
+                <div class="chart-visual">
+                  <canvas id="weeklyChart" role="img" aria-label="Weekly task completion chart"></canvas>
+                  <div class="chart-empty-state" data-chart-empty="weekly" hidden>Complete a task to see your weekly progress.</div>
+                </div>
               </div>
               <div class="panel chart-panel">
                 <div class="panel-header">
                   <h2>Project status distribution</h2>
                 </div>
-                <canvas id="statusChart" aria-label="Project status chart"></canvas>
+                <div class="chart-visual">
+                  <canvas id="statusChart" role="img" aria-label="Project status distribution chart"></canvas>
+                  <div class="chart-empty-state" data-chart-empty="status" hidden>Create a project to see its status here.</div>
+                </div>
               </div>
             </div>
             <div class="content-grid two-col">
