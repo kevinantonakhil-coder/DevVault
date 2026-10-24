@@ -105,8 +105,39 @@ let chartRefs = {};
 let timerInterval = null;
 let currentProjectId = null;
 let currentPage = "dashboard";
+let deferredInstallPrompt = null;
 
 document.addEventListener("DOMContentLoaded", initApp);
+document.addEventListener("DOMContentLoaded", initProgressiveWebApp);
+
+function initProgressiveWebApp() {
+  document.getElementById("copyrightYear").textContent = String(new Date().getFullYear());
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./service-worker.js").catch((error) => {
+      console.error("DevVault offline support could not be enabled.", error);
+    });
+  }
+
+  const installButton = document.getElementById("installAppButton");
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    installButton.hidden = false;
+  });
+
+  installButton.addEventListener("click", async () => {
+    if (!deferredInstallPrompt) return;
+    await deferredInstallPrompt.prompt();
+    deferredInstallPrompt = null;
+    installButton.hidden = true;
+  });
+
+  window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+    installButton.hidden = true;
+  });
+}
 
 function initApp() {
   state = loadState();

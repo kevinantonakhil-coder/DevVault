@@ -99,15 +99,13 @@ textarea:focus-visible {
   padding: 0.5rem 0.75rem 1.25rem;
 }
 
-.brand-mark {
-  width: 38px;
-  height: 38px;
+.brand-logo {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  object-fit: cover;
   border-radius: 12px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(135deg, var(--accent), #5eead4);
-  color: white;
-  font-weight: 800;
+  box-shadow: 0 0 0 1px var(--border);
 }
 
 .brand-name {
@@ -155,6 +153,28 @@ textarea:focus-visible {
 .content-shell {
   flex: 1;
   min-width: 0;
+}
+
+.app-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: 0.75rem clamp(1rem, 2.2vw, 2rem) 1.25rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.app-footer img {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.footer-copyright {
+  margin-left: auto;
 }
 
 .topbar {
@@ -263,6 +283,10 @@ button:hover {
   background: var(--panel-soft);
   color: var(--text);
   border: 1px solid var(--border);
+}
+
+.install-button[hidden] {
+  display: none;
 }
 
 .ghost-button {
@@ -1061,6 +1085,7 @@ textarea {
   .topbar-actions {
     width: 100%;
     justify-content: space-between;
+    min-width: 0;
   }
 
   .search-box {
@@ -1075,6 +1100,10 @@ textarea {
   .toolbar {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .app-footer {
+    padding-inline: 1rem;
   }
 
   .two-col {

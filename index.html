@@ -8,7 +8,12 @@
       name="description"
       content="Developer dashboard for projects, tasks, goals, GitHub activity, and productivity tooling."
     />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2314141d'/%3E%3Cpath d='M20 20h24v24H20z' fill='none' stroke='%237c6df3' stroke-width='4'/%3E%3Cpath d='M26 38V26h12v12M26 32h12' stroke='%237c6df3' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <meta name="theme-color" content="#0b1020" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="DevVault" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./assets/devvault-192.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -23,7 +28,7 @@
     <div class="app-shell">
       <aside class="sidebar" id="sidebar">
         <div class="brand-row">
-          <div class="brand-mark">D</div>
+          <img class="brand-logo" src="./assets/devvault-192.png" alt="" width="44" height="44" />
           <div>
             <div class="brand-name">DevVault</div>
             <div class="brand-subtitle">Developer command center</div>
@@ -97,6 +102,9 @@
             </div>
             <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle theme">
               <span data-lucide="sun-moon"></span>
+            </button>
+            <button class="secondary-button install-button" id="installAppButton" type="button" hidden>
+              Install app
             </button>
           </div>
         </header>
@@ -425,6 +433,11 @@
             </div>
           </section>
         </main>
+        <footer class="app-footer">
+          <img src="./assets/devvault-192.png" alt="" width="28" height="28" />
+          <span>DevVault</span>
+          <span class="footer-copyright">© <span id="copyrightYear">2026</span> DevVault</span>
+        </footer>
       </div>
     </div>
 
